@@ -20,13 +20,16 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.gustavohenryque.connectingpeople.Interfaces.TranslationDelegate;
 import com.example.gustavohenryque.connectingpeople.R;
 import com.example.gustavohenryque.connectingpeople.VoiceRecognition.VoiceRecognition;
 
 import java.io.File;
+import java.util.List;
 import java.util.Locale;
+import java.util.TooManyListenersException;
 
 /**
  * Created by gustavohenryque on 26/09/2016.
@@ -197,6 +200,22 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
     @Override
     public void voiceReturn(String voice) {
         txtIng.setText(voice);
+    }
+    @Override
+    public void translateReturn(List<String> result) {
+        if(result != null){
+            String phrase = "";
+            for(String unitResult: result){
+                phrase += " " + unitResult;
+            }
+
+            txtIng.setText(phrase);
+        }
+    }
+
+    @Override
+    public void translateError(Exception e) {
+        Toast.makeText(getActivity(),e.getMessage(), Toast.LENGTH_SHORT).show();
     }
 
 }
