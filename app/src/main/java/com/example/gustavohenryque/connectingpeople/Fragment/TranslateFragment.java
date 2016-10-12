@@ -22,13 +22,18 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.gustavohenryque.connectingpeople.AsyncRequest.DatabaseAsyncConnection;
+import com.example.gustavohenryque.connectingpeople.Avtivity.BaseActivityConnection;
 import com.example.gustavohenryque.connectingpeople.Interfaces.TranslationDelegate;
 import com.example.gustavohenryque.connectingpeople.R;
 import com.example.gustavohenryque.connectingpeople.VoiceRecognition.VoiceRecognition;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TooManyListenersException;
 
 /**
@@ -43,6 +48,7 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
     private TextToSpeech speech;
     private Snackbar snack;
     private SpeechRecognizer recognizer;
+    public Map<Integer, List<String>> map;
 
     private Boolean portugueseTranslaction = false;
 
@@ -52,6 +58,10 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
         this.speech = new TextToSpeech(this.getActivity().getApplicationContext(),onInitListener);
         recognizer = SpeechRecognizer.createSpeechRecognizer(getActivity());
         recognizer.setRecognitionListener(new VoiceRecognition(this));
+
+        BaseActivityConnection base = (BaseActivityConnection) getActivity();
+        if(base.isConnectedNetwork());
+            //Toast.makeText(getActivity(),"Conectado na internet", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -146,7 +156,7 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
         public void afterTextChanged(Editable editable) {
             String group = editable.toString();
             //txtPort.setText(group);
-            txtPort.addTextChangedListener(textWatcherPort);
+            translateIt(1,group);
         }
     };
 
@@ -168,14 +178,14 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
 
             String group = editable.toString();
             //txtIng.setText(group);
-            txtIng.addTextChangedListener(textWatcherIng);
+            translateIt(0,group);
         }
     };
 
     private TextToSpeech.OnInitListener onInitListener = new TextToSpeech.OnInitListener() {
+
         @Override
         public void onInit(int status) {
-
             speech.setLanguage(Locale.US);
         }
     };
@@ -191,6 +201,19 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
         speech.speak(phrase, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
+    private void translateIt(Integer index, String group){
+        this.map = new HashMap<>();
+        String[] array = group.split(" ");
+        List<String> list = new ArrayList<>();
+
+        for(String word :array){
+            list.add(word);
+        }
+        this.map.put(index,list);
+        new DatabaseAsyncConnection(this).execute();
+
+    }
+
     @Override
     public void recognitionError(Integer i) {
         snack = (Snackbar) Snackbar.make(getView(), "Deu erro " + i, Snackbar.LENGTH_INDEFINITE);
@@ -201,21 +224,29 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
     public void voiceReturn(String voice) {
         txtIng.setText(voice);
     }
+
     @Override
     public void translateReturn(List<String> result) {
+
         if(result != null){
             String phrase = "";
             for(String unitResult: result){
                 phrase += " " + unitResult;
             }
 
-            txtIng.setText(phrase);
+            if(portugueseTranslaction){
+                txtPort.setText(phrase);
+                txtIng.addTextChangedListener(textWatcherIng);
+            }else {
+                txtIng.setText(phrase);
+                txtPort.addTextChangedListener(textWatcherPort);
+            }
         }
     }
 
     @Override
     public void translateError(Exception e) {
-        Toast.makeText(getActivity(),e.getMessage(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(),e.getMessage(), Toast.LENGTH_LONG).show();
     }
 
 }

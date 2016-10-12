@@ -39,7 +39,7 @@ public class DatabaseAccess {
 
     public List<String> getQuotes() {
         List<String> list = new ArrayList<String>();
-        Cursor cursor = database.rawQuery("SELECT portugues FROM palavras", null);
+        Cursor cursor = database.rawQuery("SELECT portugues FROM palavras LIMIT 2", null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             list.add(cursor.getString(0));
@@ -51,7 +51,7 @@ public class DatabaseAccess {
 
     public List<String> getTraduction(Map<Integer, List<String>> text) {
         List<String> traductions = new ArrayList<String>();
-        List<String> query = new ArrayList<String>();
+        List<String> query;
         String baseQuery = "";
 
         if (text != null) {

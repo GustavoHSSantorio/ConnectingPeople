@@ -7,7 +7,9 @@ import com.example.gustavohenryque.connectingpeople.DatabaseConnection.DatabaseA
 import com.example.gustavohenryque.connectingpeople.Fragment.TranslateFragment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by gustavohenryque on 03/10/2016.
@@ -15,6 +17,7 @@ import java.util.List;
 public class DatabaseAsyncConnection extends AsyncTask {
 
     TranslateFragment delegate;
+    public boolean haserror;
 
     public DatabaseAsyncConnection(TranslateFragment delegate){
         this.delegate = delegate;
@@ -26,17 +29,18 @@ public class DatabaseAsyncConnection extends AsyncTask {
     }
 
     @Override
-    protected List<String> doInBackground(Object[] objects) {
+    protected Object doInBackground(Object[] objects) {
 
-        List<String> result = new ArrayList<>();
+        Object result;
 
         try {
             DatabaseAccess access = new DatabaseAccess(delegate.getActivity());
             access.open();
-            result = access.getQuotes();
+            result = access.getTraduction(delegate.map);
             access.close();
         }catch (Exception e){
-            delegate.translateError(e);
+            haserror = true;
+            result = e;
         }
 
         return result;
@@ -46,9 +50,15 @@ public class DatabaseAsyncConnection extends AsyncTask {
     protected void onPostExecute(Object o) {
         super.onPostExecute(o);
 
-        List<String> result = (ArrayList<String>) o;
+        List<String> result;
+        Exception e;
 
-        delegate.translateReturn(result);
-
+        if(!haserror) {
+            result = (ArrayList<String>) o;
+            delegate.translateReturn(result);
+        }else {
+            e = (Exception) o;
+            delegate.translateError(e);
+        }
     }
 }

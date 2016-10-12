@@ -41,7 +41,8 @@
         android:layout_margin="@dimen/fab_margin"
         android:layout_below="@+id/txt_ing"
         android:src="@android:drawable/ic_btn_speak_now"
-        android:layout_centerHorizontal="false" />
+        android:layout_centerHorizontal="false"
+        app:backgroundTint="@color/colorPrimary"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/btn_voice"
@@ -51,6 +52,7 @@
         android:layout_margin="@dimen/fab_margin"
         android:layout_below= "@+id/txt_ing"
         android:src="@android:drawable/ic_media_play"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        app:backgroundTint="@color/colorPrimary"/>
 
 </RelativeLayout>

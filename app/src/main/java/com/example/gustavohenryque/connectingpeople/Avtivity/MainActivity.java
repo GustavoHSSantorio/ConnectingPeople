@@ -25,7 +25,7 @@ import com.example.gustavohenryque.connectingpeople.Fragment.MapsFragment;
 import com.example.gustavohenryque.connectingpeople.Fragment.TranslateFragment;
 import com.example.gustavohenryque.connectingpeople.R;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends BaseActivityConnection
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private Toolbar toolbar;
