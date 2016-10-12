@@ -1,16 +1,13 @@
 package com.example.gustavohenryque.connectingpeople.Fragment;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.text.Editable;
@@ -28,13 +25,14 @@ import com.example.gustavohenryque.connectingpeople.Interfaces.TranslationDelega
 import com.example.gustavohenryque.connectingpeople.R;
 import com.example.gustavohenryque.connectingpeople.VoiceRecognition.VoiceRecognition;
 
-import java.io.File;
+import com.google.api.translate.Translator;
+import com.google.api.translate.Language;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TooManyListenersException;
 
 /**
  * Created by gustavohenryque on 26/09/2016.
@@ -51,17 +49,17 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
     public Map<Integer, List<String>> map;
 
     private Boolean portugueseTranslaction = false;
+    private boolean isConnectedNetwork;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.speech = new TextToSpeech(this.getActivity().getApplicationContext(),onInitListener);
-        recognizer = SpeechRecognizer.createSpeechRecognizer(getActivity());
-        recognizer.setRecognitionListener(new VoiceRecognition(this));
+        this.recognizer = SpeechRecognizer.createSpeechRecognizer(getActivity());
+        this.recognizer.setRecognitionListener(new VoiceRecognition(this));
 
         BaseActivityConnection base = (BaseActivityConnection) getActivity();
-        if(base.isConnectedNetwork());
-            //Toast.makeText(getActivity(),"Conectado na internet", Toast.LENGTH_LONG).show();
+        this.isConnectedNetwork = base.isConnectedNetwork();
     }
 
     @Override
@@ -80,7 +78,7 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
             this.fab = (FloatingActionButton) view.findViewById(R.id.btn_speak);
             fab.setOnTouchListener(onTouchListener);
             this.vFab = (FloatingActionButton) view.findViewById(R.id.btn_voice);
-            vFab.setOnClickListener(onClickListener);
+            this.vFab.setOnClickListener(onClickListener);
 
             this.txtIng = (TextView) view.findViewById(R.id.txt_ing);
             this.txtPort = (TextView) view.findViewById(R.id.txt_port);
@@ -202,16 +200,25 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
     }
 
     private void translateIt(Integer index, String group){
-        this.map = new HashMap<>();
-        String[] array = group.split(" ");
-        List<String> list = new ArrayList<>();
+        if(!this.isConnectedNetwork) {
+            this.map = new HashMap<>();
+            String[] array = group.split(" ");
+            List<String> list = new ArrayList<>();
 
-        for(String word :array){
-            list.add(word);
+            for (String word : array) {
+                list.add(word);
+            }
+            this.map.put(index, list);
+            new DatabaseAsyncConnection(this).execute();
+        }else {
+            try {
+                Translator.setHttpReferrer("http://android-er.blogspot.com/");
+                String teste = Translator.execute("test",
+                        Language.ENGLISH, Language.FRENCH);
+            }catch (Exception e){
+                Toast.makeText(getActivity(),e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
-        this.map.put(index,list);
-        new DatabaseAsyncConnection(this).execute();
-
     }
 
     @Override
