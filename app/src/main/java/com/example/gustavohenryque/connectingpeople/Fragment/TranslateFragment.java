@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.gustavohenryque.connectingpeople.AsyncRequest.DatabaseAsyncConnection;
+import com.example.gustavohenryque.connectingpeople.AsyncRequest.GoogleTranslatorAsyncAPIRequest;
 import com.example.gustavohenryque.connectingpeople.Avtivity.BaseActivityConnection;
 import com.example.gustavohenryque.connectingpeople.Interfaces.TranslationDelegate;
 import com.example.gustavohenryque.connectingpeople.R;
@@ -49,7 +50,8 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
     public Map<Integer, List<String>> map;
 
     private Boolean portugueseTranslaction = false;
-    private boolean isConnectedNetwork;
+
+    public BaseActivityConnection base;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,8 +60,7 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
         this.recognizer = SpeechRecognizer.createSpeechRecognizer(getActivity());
         this.recognizer.setRecognitionListener(new VoiceRecognition(this));
 
-        BaseActivityConnection base = (BaseActivityConnection) getActivity();
-        this.isConnectedNetwork = base.isConnectedNetwork();
+        this.base = (BaseActivityConnection) getActivity();
     }
 
     @Override
@@ -200,7 +201,7 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
     }
 
     private void translateIt(Integer index, String group){
-        if(!this.isConnectedNetwork) {
+        if(!this.base.isConnectedNetwork()) {
             this.map = new HashMap<>();
             String[] array = group.split(" ");
             List<String> list = new ArrayList<>();
@@ -211,13 +212,7 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
             this.map.put(index, list);
             new DatabaseAsyncConnection(this).execute();
         }else {
-            try {
-                Translator.setHttpReferrer("http://android-er.blogspot.com/");
-                String teste = Translator.execute("test",
-                        Language.ENGLISH, Language.FRENCH);
-            }catch (Exception e){
-                Toast.makeText(getActivity(),e.getMessage(), Toast.LENGTH_LONG).show();
-            }
+            new GoogleTranslatorAsyncAPIRequest(this).execute();
         }
     }
 
@@ -253,6 +248,22 @@ public class TranslateFragment extends Fragment implements TranslationDelegate{
 
     @Override
     public void translateError(Exception e) {
+        Toast.makeText(getActivity(),e.getMessage(), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void googleRequestReturn(String result) {
+        if(portugueseTranslaction){
+            txtPort.setText(result);
+            txtIng.addTextChangedListener(textWatcherIng);
+        }else {
+            txtIng.setText(result);
+            txtPort.addTextChangedListener(textWatcherPort);
+        }
+    }
+
+    @Override
+    public void googleRequestError(Exception e) {
         Toast.makeText(getActivity(),e.getMessage(), Toast.LENGTH_LONG).show();
     }
 

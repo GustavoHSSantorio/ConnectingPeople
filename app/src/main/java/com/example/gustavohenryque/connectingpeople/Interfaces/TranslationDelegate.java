@@ -10,4 +10,6 @@ public interface TranslationDelegate {
     void recognitionError(Integer i);
     void translateReturn(List<String> result);
     void translateError(Exception e);
+    void googleRequestReturn(String result);
+    void googleRequestError(Exception e);
 }
